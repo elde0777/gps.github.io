@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TGV Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --panel: #0f1318;
+    --border: #1e2530;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --green: #00ff88;
+    --text: #c8d8e8;
+    --dim: #4a5a6a;
+    --speed-glow: rgba(0, 212, 255, 0.15);
+  }
+
+- { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Rajdhani’, sans-serif;
+min-height: 100dvh;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+position: fixed;
+width: 100%;
+}
+
+/* Header */
+.header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 16px 20px 12px;
+border-bottom: 1px solid var(–border);
+background: linear-gradient(180deg, #0d1018 0%, var(–bg) 100%);
+}
+
+.logo {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.logo-icon {
+width: 32px;
+height: 32px;
+position: relative;
+}
+
+.logo-icon svg { width: 100%; height: 100%; }
+
+.logo-text {
+font-size: 20px;
+font-weight: 700;
+letter-spacing: 3px;
+color: #fff;
+text-transform: uppercase;
+}
+
+.logo-text span { color: var(–accent); }
+
+.status-dot {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+background: var(–dim);
+transition: background 0.3s, box-shadow 0.3s;
+}
+
+.status-dot.active {
+background: var(–green);
+box-shadow: 0 0 8px var(–green), 0 0 16px rgba(0,255,136,0.3);
+animation: pulse 2s infinite;
+}
+
+.status-dot.error { background: var(–accent2); }
+
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.4; }
+}
+
+/* Main content */
+.content {
+flex: 1;
+display: flex;
+flex-direction: column;
+padding: 16px;
+gap: 12px;
+overflow: hidden;
+}
+
+/* Speed display - hero element */
+.speed-hero {
+background: var(–panel);
+border: 1px solid var(–border);
+border-radius: 16px;
+padding: 20px;
+text-align: center;
+position: relative;
+overflow: hidden;
+}
+
+.speed-hero::before {
+content: ‘’;
+position: absolute;
+top: 0; left: 0; right: 0; bottom: 0;
+background: radial-gradient(ellipse at 50% 120%, var(–speed-glow) 0%, transparent 70%);
+pointer-events: none;
+}
+
+.speed-label {
+font-size: 11px;
+letter-spacing: 4px;
+color: var(–accent);
+text-transform: uppercase;
+margin-bottom: 4px;
+font-weight: 600;
+}
+
+.speed-value {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 88px;
+line-height: 1;
+color: #fff;
+text-shadow: 0 0 20px rgba(0,212,255,0.4), 0 0 60px rgba(0,212,255,0.1);
+letter-spacing: -2px;
+transition: color 0.5s;
+}
+
+.speed-value.fast { color: var(–accent2); text-shadow: 0 0 20px rgba(255,107,53,0.4); }
+.speed-value.medium { color: var(–accent); }
+
+.speed-unit {
+font-size: 14px;
+color: var(–dim);
+letter-spacing: 2px;
+margin-top: 4px;
+font-weight: 600;
+}
+
+/* Speed bar */
+.speed-bar-wrap {
+margin-top: 14px;
+height: 4px;
+background: var(–border);
+border-radius: 2px;
+overflow: hidden;
+}
+
+.speed-bar {
+height: 100%;
+border-radius: 2px;
+background: linear-gradient(90deg, var(–accent) 0%, var(–accent2) 100%);
+transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+width: 0%;
+box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+}
+
+/* Stats grid */
+.stats-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+}
+
+.stat-card {
+background: var(–panel);
+border: 1px solid var(–border);
+border-radius: 12px;
+padding: 14px 16px;
+}
+
+.stat-card-label {
+font-size: 10px;
+letter-spacing: 3px;
+color: var(–dim);
+text-transform: uppercase;
+margin-bottom: 6px;
+}
+
+.stat-card-value {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 22px;
+color: #fff;
+line-height: 1;
+}
+
+.stat-card-sub {
+font-size: 10px;
+color: var(–dim);
+margin-top: 3px;
+letter-spacing: 1px;
+}
+
+/* Map */
+.map-card {
+background: var(–panel);
+border: 1px solid var(–border);
+border-radius: 16px;
+flex: 1;
+overflow: hidden;
+position: relative;
+min-height: 180px;
+}
+
+#map {
+width: 100%;
+height: 100%;
+min-height: 180px;
+}
+
+.map-label {
+position: absolute;
+top: 10px;
+left: 12px;
+font-size: 10px;
+letter-spacing: 3px;
+color: var(–accent);
+text-transform: uppercase;
+background: rgba(10,12,16,0.8);
+padding: 4px 8px;
+border-radius: 4px;
+z-index: 1000;
+font-weight: 600;
+backdrop-filter: blur(4px);
+}
+
+.map-accuracy {
+position: absolute;
+bottom: 10px;
+right: 10px;
+font-size: 10px;
+letter-spacing: 1px;
+color: var(–dim);
+background: rgba(10,12,16,0.8);
+padding: 3px 7px;
+border-radius: 4px;
+z-index: 1000;
+font-family: ‘Share Tech Mono’, monospace;
+backdrop-filter: blur(4px);
+}
+
+/* Start button */
+.btn-start {
+background: none;
+border: 1px solid var(–accent);
+color: var(–accent);
+border-radius: 12px;
+padding: 16px;
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 14px;
+font-weight: 700;
+letter-spacing: 4px;
+text-transform: uppercase;
+cursor: pointer;
+width: 100%;
+transition: all 0.2s;
+position: relative;
+overflow: hidden;
+}
+
+.btn-start::before {
+content: ‘’;
+position: absolute;
+inset: 0;
+background: var(–accent);
+opacity: 0;
+transition: opacity 0.2s;
+}
+
+.btn-start:active::before { opacity: 0.1; }
+
+.btn-start.active {
+border-color: var(–accent2);
+color: var(–accent2);
+}
+
+/* Overlay permission */
+.overlay {
+position: fixed;
+inset: 0;
+background: rgba(10,12,16,0.96);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 20px;
+z-index: 9999;
+padding: 40px;
+backdrop-filter: blur(8px);
+}
+
+.overlay.hidden { display: none; }
+
+.overlay-icon {
+font-size: 56px;
+animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+0%, 100% { transform: translateY(0); }
+50% { transform: translateY(-8px); }
+}
+
+.overlay-title {
+font-size: 28px;
+font-weight: 700;
+letter-spacing: 2px;
+text-align: center;
+color: #fff;
+}
+
+.overlay-text {
+font-size: 14px;
+color: var(–dim);
+text-align: center;
+line-height: 1.6;
+letter-spacing: 0.5px;
+}
+
+.overlay-text strong { color: var(–text); }
+
+/* Leaflet custom style */
+.leaflet-container {
+background: #10151e !important;
+}
+
+.leaflet-tile {
+filter: brightness(0.75) saturate(0.8) hue-rotate(190deg);
+}
+
+/* Train marker */
+.train-marker {
+width: 20px;
+height: 20px;
+border-radius: 50%;
+background: var(–accent);
+border: 3px solid #fff;
+box-shadow: 0 0 0 4px rgba(0,212,255,0.3), 0 0 16px rgba(0,212,255,0.5);
+animation: markerPulse 2s infinite;
+}
+
+@keyframes markerPulse {
+0%, 100% { box-shadow: 0 0 0 4px rgba(0,212,255,0.3), 0 0 16px rgba(0,212,255,0.5); }
+50% { box-shadow: 0 0 0 8px rgba(0,212,255,0.1), 0 0 24px rgba(0,212,255,0.3); }
+}
+
+.leaflet-control-attribution { display: none; }
+.leaflet-control-zoom { display: none; }
+
+/* Accuracy indicator */
+.acc-good { color: var(–green); }
+.acc-ok { color: var(–accent); }
+.acc-bad { color: var(–accent2); }
+
+/* Scan line effect */
+.scanlines {
+position: fixed;
+inset: 0;
+pointer-events: none;
+z-index: 99999;
+background: repeating-linear-gradient(
+0deg,
+transparent,
+transparent 2px,
+rgba(0,0,0,0.02) 2px,
+rgba(0,0,0,0.02) 4px
+);
+}
+</style>
+
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<!-- Permission overlay -->
+
+<div class="overlay" id="overlay">
+  <div class="overlay-icon">🚄</div>
+  <div class="overlay-title">TGV TRACKER</div>
+  <div class="overlay-text">
+    Vitesse GPS en temps réel & position sur carte.<br><br>
+    <strong>Autorisez l'accès à votre localisation</strong> dans Safari pour démarrer le suivi.<br><br>
+    Idéalement, gardez l'écran allumé pendant le trajet.
+  </div>
+  <button class="btn-start" onclick="startTracking()">▶ DÉMARRER</button>
+</div>
+
+<!-- App -->
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 32 32" fill="none">
+        <rect x="2" y="10" width="28" height="14" rx="4" fill="none" stroke="#00d4ff" stroke-width="1.5"/>
+        <rect x="6" y="14" width="8" height="6" rx="1" fill="#00d4ff" opacity="0.3"/>
+        <rect x="18" y="14" width="8" height="6" rx="1" fill="#00d4ff" opacity="0.3"/>
+        <circle cx="8" cy="26" r="2.5" fill="#00d4ff"/>
+        <circle cx="24" cy="26" r="2.5" fill="#00d4ff"/>
+        <line x1="2" y1="24" x2="30" y2="24" stroke="#1e2530" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="logo-text">TGV <span>TRACK</span></div>
+  </div>
+  <div class="status-dot" id="statusDot"></div>
+</div>
+
+<div class="content">
+  <!-- Speed hero -->
+  <div class="speed-hero">
+    <div class="speed-label">VITESSE INSTANTANÉE</div>
+    <div class="speed-value" id="speedValue">---</div>
+    <div class="speed-unit">KM/H</div>
+    <div class="speed-bar-wrap">
+      <div class="speed-bar" id="speedBar"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-label">Vitesse max</div>
+      <div class="stat-card-value" id="maxSpeed">--</div>
+      <div class="stat-card-sub">km/h</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Altitude</div>
+      <div class="stat-card-value" id="altitude">--</div>
+      <div class="stat-card-sub">mètres</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Latitude</div>
+      <div class="stat-card-value" id="latitude" style="font-size:16px; margin-top: 4px;">--</div>
+      <div class="stat-card-sub">degrés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Longitude</div>
+      <div class="stat-card-value" id="longitude" style="font-size:16px; margin-top: 4px;">--</div>
+      <div class="stat-card-sub">degrés</div>
+    </div>
+  </div>
+
+  <!-- Map -->
+
+  <div class="map-card">
+    <div class="map-label">📍 POSITION GPS</div>
+    <div id="map"></div>
+    <div class="map-accuracy" id="mapAccuracy">Précision : --</div>
+  </div>
+
+<button class="btn-start active" id="stopBtn" onclick="stopTracking()" style="display:none">⏹ ARRÊTER LE SUIVI</button>
+
+</div>
+
+<!-- Leaflet -->
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+let map = null;
+let marker = null;
+let trail = [];
+let polyline = null;
+let watchId = null;
+let maxSpeed = 0;
+let tracking = false;
+
+const MAX_SPEED_KMH = 330; // TGV max
+
+function initMap(lat, lon) {
+  if (map) return;
+
+  map = L.map('map', {
+    zoomControl: false,
+    attributionControl: false,
+    dragging: true,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+  }).setView([lat, lon], 13);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+  }).addTo(map);
+
+  const icon = L.divIcon({
+    html: '<div class="train-marker"></div>',
+    className: '',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+
+  marker = L.marker([lat, lon], { icon }).addTo(map);
+  polyline = L.polyline([], { color: '#00d4ff', weight: 2, opacity: 0.6 }).addTo(map);
+}
+
+function updateMap(lat, lon) {
+  if (!map) {
+    initMap(lat, lon);
+    return;
+  }
+  marker.setLatLng([lat, lon]);
+  trail.push([lat, lon]);
+  if (trail.length > 200) trail.shift();
+  polyline.setLatLngs(trail);
+  map.setView([lat, lon], map.getZoom(), { animate: true, duration: 1 });
+}
+
+function onPosition(pos) {
+  const { latitude, longitude, altitude, speed, accuracy } = pos.coords;
+
+  // Speed in km/h
+  const speedKmh = speed != null ? Math.round(speed * 3.6) : null;
+
+  // UI
+  const statusDot = document.getElementById('statusDot');
+  statusDot.className = 'status-dot active';
+
+  const speedEl = document.getElementById('speedValue');
+  if (speedKmh !== null) {
+    speedEl.textContent = speedKmh;
+    speedEl.className = 'speed-value' + (speedKmh > 200 ? ' fast' : speedKmh > 80 ? ' medium' : '');
+
+    // Bar
+    const pct = Math.min((speedKmh / MAX_SPEED_KMH) * 100, 100);
+    document.getElementById('speedBar').style.width = pct + '%';
+
+    // Max speed
+    if (speedKmh > maxSpeed) {
+      maxSpeed = speedKmh;
+      document.getElementById('maxSpeed').textContent = maxSpeed;
+    }
+  } else {
+    speedEl.textContent = '---';
+    speedEl.className = 'speed-value';
+  }
+
+  // Coords
+  document.getElementById('latitude').textContent = latitude.toFixed(5);
+  document.getElementById('longitude').textContent = longitude.toFixed(5);
+
+  // Altitude
+  document.getElementById('altitude').textContent = altitude != null ? Math.round(altitude) : '--';
+
+  // Accuracy
+  const accEl = document.getElementById('mapAccuracy');
+  const accM = Math.round(accuracy);
+  accEl.textContent = `±${accM}m`;
+  accEl.className = 'map-accuracy ' + (accM < 15 ? 'acc-good' : accM < 50 ? 'acc-ok' : 'acc-bad');
+
+  // Map
+  updateMap(latitude, longitude);
+}
+
+function onError(err) {
+  document.getElementById('statusDot').className = 'status-dot error';
+  const msgs = {
+    1: 'Accès refusé. Autorisez la localisation dans Réglages > Safari.',
+    2: 'Position indisponible. Vérifiez votre signal GPS.',
+    3: 'Délai dépassé. Réessayez.',
+  };
+  alert(msgs[err.code] || 'Erreur GPS inconnue.');
+}
+
+function startTracking() {
+  if (!navigator.geolocation) {
+    alert("La géolocalisation n'est pas supportée par ce navigateur.");
+    return;
+  }
+
+  document.getElementById('overlay').classList.add('hidden');
+  document.getElementById('stopBtn').style.display = 'block';
+
+  tracking = true;
+  watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+    enableHighAccuracy: true,
+    maximumAge: 500,
+    timeout: 10000,
+  });
+}
+
+function stopTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  tracking = false;
+  document.getElementById('statusDot').className = 'status-dot';
+  document.getElementById('speedValue').textContent = '---';
+  document.getElementById('speedValue').className = 'speed-value';
+  document.getElementById('speedBar').style.width = '0%';
+  document.getElementById('stopBtn').style.display = 'none';
+  document.getElementById('overlay').classList.remove('hidden');
+  // Reset trail
+  trail = [];
+  if (polyline) polyline.setLatLngs([]);
+}
+
+// Prevent sleep on iOS via periodic dummy audio (workaround)
+// Keep screen alive hint
+if ('wakeLock' in navigator) {
+  const requestWakeLock = async () => {
+    try { await navigator.wakeLock.request('screen'); } catch(e) {}
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') requestWakeLock();
+  });
+  requestWakeLock();
+}
+</script>
+
+</body>
+</html>
